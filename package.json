@@ -1,0 +1,25 @@
+{
+  "name": "lab-06-back-end",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lamsharkie/lab-06-back-end.git"
+  },
+  "author": "Brandon D Gibbs",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lamsharkie/lab-06-back-end/issues"
+  },
+  "homepage": "https://github.com/lamsharkie/lab-06-back-end#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  }
+}
