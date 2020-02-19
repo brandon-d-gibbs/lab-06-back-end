@@ -32,11 +32,31 @@ app.get('/location', (request, response) => {
   }
 })
 
+app.get('/weather', (request, response)=>{
+    let {search_query, formatted_query, latitude, longitude} = request.query;
+
+    let darksky = require('./data/darksky.json');
+
+    let weatherArray = darksky.daily.data;
+
+    let newWeatherArray = [];
+    weatherArray.forEach(day => {
+        newWeatherArray.push(new Weather(day));
+    })
+    
+    response.send(newWeatherArray);
+})
+
 function City(city, obj){
   this.search_query = city;
   this.formatted_query = obj.display_name;
   this.latitude = obj.lat;
   this.longitude = obj.lon;
+}
+
+function Weather(day) {
+    this.time = new Date(day.time).toDateString();
+    this.forecast = day.summary;
 }
 
 // turn on the server
