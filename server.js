@@ -15,17 +15,32 @@ require('dotenv').config();
 const cors = require('cors');
 app.use(cors())
 
+// SUPERAGENT... Let's go get some API action!
+const superagent = require('superagent');
+
 // get the port from the env
 const PORT = process.env.PORT || 3001;
 
 app.get('/location', (request, response) => {
   try{
     let city = request.query.city;
-    let geoData = require('./data/geo.json');
-  
-    let location = new City(city, geoData[0])
-  
-    response.send(location);
+    // let geoData = require('./data/geo.json');
+    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.LOCATION_API}&q=${city}&format=json`
+
+    
+
+    console.log(url);
+
+    superagent.get(url) 
+        .then(data => {
+        // console.log('results', data.body);
+        
+        let locationResults = data.body[0];
+        console.log('local results', locationResults);
+        let location = new City(city, data.body[0])
+        // console.log('this is a place', location)
+        response.send(location);
+        })
   }
   catch (err){
     console.log('No location for you! Try again.', err);
@@ -36,11 +51,13 @@ app.get('/weather', (request, response)=>{
     try{
     let {search_query, formatted_query, latitude, longitude} = request.query;
 
+    let url = `https://api.darksky.net/forecast/${process.env.DARKSKY_KEY}/${latitude},${longitude}`
+    
     let darksky = require('./data/darksky.json');
 
     let weatherArray = darksky.daily.data;
 
-    let newWeatherArray = weatherArray.map(day => new Weather(day))
+    let newWeatherArray = weatherArray.map(day => new Weather(day));
 
     response.send(newWeatherArray);
     } 
@@ -57,7 +74,7 @@ function City(city, obj){
 }
 
 function Weather(day) {
-    this.time = new Date(day.time).toDateString();
+    this.time = new Date(day.time * 1000).toDateString();
     this.forecast = day.summary;
 }
 
