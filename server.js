@@ -28,8 +28,28 @@ app.get('/location', (request, response) => {
     response.send(location);
   }
   catch (err){
-    console.log(err);
+    console.log('No location for you! Try again.', err);
   }
+})  
+
+app.get('/weather', (request, response)=>{
+    try{
+    let {search_query, formatted_query, latitude, longitude} = request.query;
+
+    let darksky = require('./data/darksky.json');
+
+    let weatherArray = darksky.daily.data;
+
+    let newWeatherArray = [];
+    weatherArray.forEach(day => {
+        newWeatherArray.push(new Weather(day));
+    })
+    
+    response.send(newWeatherArray);
+    } 
+    catch(err){
+        console.log('No weather for you! Try again.', err)
+    }
 })
 
 function City(city, obj){
@@ -37,6 +57,11 @@ function City(city, obj){
   this.formatted_query = obj.display_name;
   this.latitude = obj.lat;
   this.longitude = obj.lon;
+}
+
+function Weather(day) {
+    this.time = new Date(day.time).toDateString();
+    this.forecast = day.summary;
 }
 
 // turn on the server
