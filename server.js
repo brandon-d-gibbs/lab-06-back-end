@@ -28,11 +28,12 @@ app.get('/location', (request, response) => {
     response.send(location);
   }
   catch (err){
-    console.log(err);
+    console.log('No location for you! Try again.', err);
   }
-})
+})  
 
 app.get('/weather', (request, response)=>{
+    try{
     let {search_query, formatted_query, latitude, longitude} = request.query;
 
     let darksky = require('./data/darksky.json');
@@ -45,6 +46,10 @@ app.get('/weather', (request, response)=>{
     })
     
     response.send(newWeatherArray);
+    } 
+    catch(err){
+        console.log('No weather for you! Try again.', err)
+    }
 })
 
 function City(city, obj){
