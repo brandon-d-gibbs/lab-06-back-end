@@ -40,11 +40,8 @@ app.get('/weather', (request, response)=>{
 
     let weatherArray = darksky.daily.data;
 
-    let newWeatherArray = [];
-    weatherArray.forEach(day => {
-        newWeatherArray.push(new Weather(day));
-    })
-    
+    let newWeatherArray = weatherArray.map(day => new Weather(day))
+
     response.send(newWeatherArray);
     } 
     catch(err){
