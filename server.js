@@ -51,15 +51,19 @@ app.get('/weather', (request, response)=>{
     try{
     let {search_query, formatted_query, latitude, longitude} = request.query;
 
-    let url = `https://api.darksky.net/forecast/${process.env.DARKSKY_KEY}/${latitude},${longitude}`
-    
-    let darksky = require('./data/darksky.json');
+    let url = `https://api.darksky.net/forecast/${process.env.DARKSKY_KEY}/${latitude},${longitude}`;
 
-    let weatherArray = darksky.daily.data;
+    superagent.get(url)
+        .then(darkSky => {
 
-    let newWeatherArray = weatherArray.map(day => new Weather(day));
+            let weatherArray = darkSky.body.daily.data;
+            console.log('darksky', weatherArray[0]);
+            let newWeatherArray = weatherArray.map(day => new Weather(day));
+        
+            response.send(newWeatherArray);
+        })
 
-    response.send(newWeatherArray);
+    // let darksky = require('./data/darksky.json');
     } 
     catch(err){
         console.log('No weather for you! Try again.', err)
@@ -82,3 +86,5 @@ function Weather(day) {
 app.listen(PORT, () => {
   console.log(`listening to ${PORT}`);
 })
+
+//note so I can ACP again
