@@ -13,7 +13,7 @@ require('dotenv').config();
 
 // the policeman - lets the server know that it is OK to give information to the front end
 const cors = require('cors');
-app.use(cors())
+app.use(cors());
 
 // SUPERAGENT... Let's go get some API action!
 const superagent = require('superagent');
@@ -29,15 +29,15 @@ app.get('/location', (request, response) => {
 
     
 
-    console.log(url);
+    // console.log(url);
 
     superagent.get(url) 
         .then(data => {
         // console.log('results', data.body);
         
         let locationResults = data.body[0];
-        console.log('local results', locationResults);
-        let location = new City(city, data.body[0])
+        // console.log('local results', locationResults);
+        let location = new City(city, locationResults);
         // console.log('this is a place', location)
         response.send(location);
         })
@@ -57,7 +57,7 @@ app.get('/weather', (request, response)=>{
         .then(darkSky => {
 
             let weatherArray = darkSky.body.daily.data;
-            console.log('darksky', weatherArray[0]);
+            // console.log('darksky', weatherArray[0]);
             let newWeatherArray = weatherArray.map(day => new Weather(day));
         
             response.send(newWeatherArray);
@@ -70,6 +70,28 @@ app.get('/weather', (request, response)=>{
     }
 })
 
+
+app.get('/trails', (request, response) => {
+    let {latitude, longitude} = request.query;
+
+    let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+
+    // console.log('Things are happening');
+
+    superagent.get(url)
+        .then(results => {
+            // console.log('hi', results);
+            let dataObj = results.body.trails.map(trail => new Trail(trail));
+            // console.log(dataObj);
+            response.status(200).send(dataObj);
+        }) 
+        .catch(err =>{
+            console.log('Something went horribly wong!', err);
+        })
+})
+
+
+
 function City(city, obj){
   this.search_query = city;
   this.formatted_query = obj.display_name;
@@ -81,6 +103,20 @@ function Weather(day) {
     this.time = new Date(day.time * 1000).toDateString();
     this.forecast = day.summary;
 }
+
+
+function Trail(obj) {
+    this.name = obj.name;
+    this.location = obj.location;
+    this.length = obj.length;
+    this.stars = obj.stars;
+    this.star_votes = obj.starVotes;
+    this.summary = obj.summary;
+    this.trail_url = obj.url;
+    this.conditions = obj.conditionStatus;
+    this.condition_date = obj.conditionDate.slice(0,10);
+    this.condition_time = obj.conditionDate.slice(11,19);
+  }
 
 // turn on the server
 app.listen(PORT, () => {

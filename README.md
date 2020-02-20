@@ -31,3 +31,4 @@ Tools & Dependencies: Express, Cors, NODE
 
 ### Collaborators:
 _version_ 1: Anthony Cunningham.
+_version_ 2: Morgan Horton, Anthony Heinemann
