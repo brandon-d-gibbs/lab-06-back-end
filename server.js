@@ -21,31 +21,54 @@ const superagent = require('superagent');
 // get the port from the env
 const PORT = process.env.PORT || 3001;
 
+//All the  database goodies
+const pg = require('pg');
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', error => console.error(error));
+
+
+// Location Route - Provides city data upon user typing in city and hitting button -- testing
 app.get('/location', (request, response) => {
-  try{
+
+    // Look in DB to see if location already exists
     let city = request.query.city;
-    // let geoData = require('./data/geo.json');
     let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.LOCATION_API}&q=${city}&format=json`
+    let sql = 'SELECT * FROM locations WHERE search_query = $1;';
+    let  safeValues = [city];
 
+    client.query(sql, safeValues)
+        .then(results => {
+            if (results.rows.length > 0) {
+                // If does, send that file to the front end
+                    //it will make life easier if the structure of the DB data is in the same format as what the front end is expecting.
+                response.send(results.rows[0]);
+            } 
+            else {                        
+                  superagent.get(url) 
+                      .then(data => {                  
+                      let locationResults = data.body[0];                  
+                      let location = new City(city, locationResults);
+                    
+                      response.status(200).send(location);
     
+                    let sql = 'INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES($1, $2, $3, $4);';
+                    let safeValues = [city, location.formatted_query, location.latitude, location.longitude]; 
+                    
+                    client.query(sql, safeValues);
 
-    // console.log(url);
-
-    superagent.get(url) 
-        .then(data => {
-        // console.log('results', data.body);
-        
-        let locationResults = data.body[0];
-        // console.log('local results', locationResults);
-        let location = new City(city, locationResults);
-        // console.log('this is a place', location)
-        response.send(location);
+                    }) 
+                    .catch((err) => {
+                    console.log('No location for you! Try again.', err);
+                    }) 
+                }   
         })
-  }
-  catch (err){
-    console.log('No location for you! Try again.', err);
-  }
-})  
+})
+
+        // If it does not, then I need to go to the API and get the data
+            //save it to the DB
+            //send it to front end
+
+
 
 app.get('/weather', (request, response)=>{
     try{
@@ -74,7 +97,7 @@ app.get('/weather', (request, response)=>{
 app.get('/trails', (request, response) => {
     let {latitude, longitude} = request.query;
 
-    let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+    let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxResults=3&key=${process.env.TRAILS_API_KEY}`;
 
     // console.log('Things are happening');
 
@@ -85,7 +108,7 @@ app.get('/trails', (request, response) => {
             // console.log(dataObj);
             response.status(200).send(dataObj);
         }) 
-        .catch(err =>{
+        .catch((err) => {
             console.log('Something went horribly wong!', err);
         })
 })
@@ -118,9 +141,18 @@ function Trail(obj) {
     this.condition_time = obj.conditionDate.slice(11,19);
   }
 
+ 
+  client.connect()
+    .then(() => {
+        app.listen(PORT, () => {
+          console.log(`listening to ${PORT}`);
+        })
+    })
+        .catch((err) => {
+            console.log('No database for you!', err);
+        });
+  
+
 // turn on the server
-app.listen(PORT, () => {
-  console.log(`listening to ${PORT}`);
-})
 
 //note so I can ACP again
