@@ -43,6 +43,9 @@ app.get('/location', (request, response) => {
                     //it will make life easier if the structure of the DB data is in the same format as what the front end is expecting.
                 response.send(results.rows[0]);
             } 
+            // If it does not, then I need to go to the API and get the data
+                //save it to the DB
+                //send it to front end
             else {                        
                   superagent.get(url) 
                       .then(data => {                  
@@ -63,12 +66,6 @@ app.get('/location', (request, response) => {
                 }   
         })
 })
-
-        // If it does not, then I need to go to the API and get the data
-            //save it to the DB
-            //send it to front end
-
-
 
 app.get('/weather', (request, response)=>{
     try{
@@ -111,6 +108,10 @@ app.get('/trails', (request, response) => {
         .catch((err) => {
             console.log('Something went horribly wong!', err);
         })
+})
+
+app.get('/movies', (request, response) =>{
+
 })
 
 

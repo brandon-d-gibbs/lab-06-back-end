@@ -8,4 +8,3 @@ CREATE TABLE locations (
     longitude NUMERIC(10, 7)
   );
 
---   INSERT INTO locaions (id, search_query, formatted_query, latitude, longitude) VALUES();
